@@ -5,6 +5,7 @@ import { v2 as cloudinary } from "cloudinary";
 
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
+import postRoutes from "./routes/post.route.js";
 
 import connectMongoDB from "./db/connectMongoDB.js";
 
@@ -34,6 +35,9 @@ app.use("/api/auth", authRoutes);
 
 // path for user action routes,  userRoutes is a middleware
 app.use("/api/users", userRoutes);
+
+// path for user posts, postRoutes is a middleware
+app.use("/api/posts", postRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log("Server is running on port 8000");
