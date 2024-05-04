@@ -8,6 +8,7 @@ export const getUserProfile = async (req, res) => {
   const { username } = req.params;
 
   try {
+    // retrieve user object by username from link parameter and return it
     const user = await User.findOne({ username }).select("-password");
     if (!user) return res.status(404).json({ error: "User not found" });
 
@@ -24,25 +25,31 @@ export const followUnfollowUser = async (req, res) => {
     const userToModify = await User.findById(id);
     const currentUser = await User.findById(req.user._id);
 
+    // ensures the user can't follow himself
     if (id === req.user._id.toString()) {
       return res
         .status(400)
         .json({ error: "You can't follow/unfollow yourself " });
     }
 
+    // make sure the user to follow and the current user objects exist
     if (!userToModify || !currentUser)
       return res.status(400).json({ error: "User not found" });
 
+    // check if the current user is following the desired user
     const isFollowing = currentUser.following.includes(id);
 
     if (isFollowing) {
+      // if following then unfollow
       await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
       await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
       res.status(200).json({ message: "User unfollowed successfully " });
     } else {
+      // otherwise follow each other
       await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
       await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
 
+      // create notification object to keep track of activities and save to db
       const newNotification = Notification({
         type: "follow",
         from: req.user._id,
@@ -61,6 +68,7 @@ export const followUnfollowUser = async (req, res) => {
 
 export const getSuggestedUsers = async (req, res) => {
   try {
+    // retrieves all of the users and filters out the ones being followed by the current user to create suggestions and return suggested users (4)
     const userId = req.user._id;
 
     const usersFollowedByMe = await User.findById(userId).select("following");
@@ -97,6 +105,7 @@ export const updateUser = async (req, res) => {
   const userId = req.user._id;
 
   try {
+    // retrieves user info and checks for their validity
     let user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -111,6 +120,7 @@ export const updateUser = async (req, res) => {
         .json({ error: "Please provide both current and new password " });
     }
 
+    // if both passwords exist and the currentPassword matches the one saved in the db, then update the password to the newPassword. Also it must be greater than 6
     if (currentPassword && newPassword) {
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
@@ -125,6 +135,7 @@ export const updateUser = async (req, res) => {
       user.password = await bcrypt.hash(newPassword, salt);
     }
 
+    // if profileImg is needed to be updated, upload the new image to cloudinary and remove the old one
     if (profileImg) {
       if (user.profileImg) {
         await cloudinary.uploader.destroy(
@@ -135,6 +146,7 @@ export const updateUser = async (req, res) => {
       profileImg = uploadedResponse.secure_url;
     }
 
+    // if coverImg is needed to be updated, upload the new image to cloudinary and remove the old one
     if (coverImg) {
       if (user.coverImg) {
         await cloudinary.uploader.destroy(
@@ -145,6 +157,7 @@ export const updateUser = async (req, res) => {
       coverImg = uploadedResponse.secure_url;
     }
 
+    // update db data and save it and send it as a response
     user.fullName = fullName || user.fullName;
     user.email = email || user.email;
     user.username = username || user.username;

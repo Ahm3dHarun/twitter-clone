@@ -3,17 +3,20 @@ import jwt from "jsonwebtoken";
 
 export const protectRoute = async (req, res, next) => {
   try {
+    // retrieves the cookies and checks for its existence
     const token = req.cookies.jwt;
     if (!token) {
       return res.status(401).json({ error: "Unauthorized: No Token Provided" });
     }
 
+    // decodes the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decoded) {
       return res.status(401).json({ error: "Unauthorized: Invalid Token" });
     }
 
+    // find the user and attach it to the request object
     const user = await User.findById(decoded.userId).select("-password");
 
     if (!user) {

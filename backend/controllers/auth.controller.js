@@ -6,6 +6,8 @@ export const signup = async (req, res) => {
   try {
     const { fullName, username, email, password } = req.body;
 
+    // verify username, email, password, etc for existence in post request and validity
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res.status(400).json({ error: "Invalid email format" });
@@ -27,8 +29,11 @@ export const signup = async (req, res) => {
         .json({ error: "Password must be at least 6 characters long" });
     }
 
+    // encrypt the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+
+    // create new user and return it as a response
 
     const newUser = new User({
       fullName,
@@ -62,6 +67,7 @@ export const signup = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
+    // check the existence of the user with the particular credentials, set cookies and reeturn user object as a response
     const { username, password } = req.body;
     const user = await User.findOne({ username });
     const isPasswordValid = await bcrypt.compare(
@@ -93,6 +99,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+    // delete cookie pretty much
     res.cookie("jwt", "", { maxAge: 0 });
     res.status(200).json({ message: "logged out successfully" });
   } catch (error) {
@@ -103,6 +110,7 @@ export const logout = async (req, res) => {
 
 export const getMe = async (req, res) => {
   try {
+    // get the user information by their id and retur it
     const user = await User.findById(req.user._id).select("-password");
     res.status(200).json(user);
   } catch (error) {

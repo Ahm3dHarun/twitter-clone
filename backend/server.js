@@ -18,16 +18,21 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-//
+//creates an instance of the Express framework, which allows you to build web applications using Node.js
 const app = express();
+// port assignment
 const PORT = process.env.PORT || 8000;
 
-app.use(express.json()); // to parse req.body
+// allows for parsing request body
+app.use(express.json());
 
+// allows for parsing cookies
 app.use(cookieParser());
 
+// path for authentication routes, authRoutes is a middleware
 app.use("/api/auth", authRoutes);
 
+// path for user action routes,  userRoutes is a middleware
 app.use("/api/users", userRoutes);
 
 app.listen(process.env.PORT, () => {
