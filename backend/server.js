@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import { v2 as cloudinary } from "cloudinary";
+import cors from "cors";
 
 import authRoutes from "./routes/auth.route.js";
 import userRoutes from "./routes/user.route.js";
@@ -22,8 +23,11 @@ cloudinary.config({
 
 //creates an instance of the Express framework, which allows you to build web applications using Node.js
 const app = express();
+
 // port assignment
 const PORT = process.env.PORT || 8000;
+
+app.use(cors());
 
 // allows for parsing request body
 app.use(express.json());
