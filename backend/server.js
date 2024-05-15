@@ -30,7 +30,7 @@ const PORT = process.env.PORT || 8000;
 app.use(cors());
 
 // allows for parsing request body
-app.use(express.json());
+app.use(express.json({ limit: "5mb" }));
 
 // allows for parsing cookies
 app.use(cookieParser());
